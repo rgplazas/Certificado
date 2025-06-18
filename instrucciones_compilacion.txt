@@ -1,0 +1,44 @@
+INSTRUCCIONES PARA COMPILAR CERTMANAGER PRO
+================================================
+
+Para crear el ejecutable de CertManager Pro con el nuevo nombre y logo, sigue estos pasos:
+
+1. Asegúrate de tener instalado auto-py-to-exe:
+   ```
+   pip install auto-py-to-exe
+   ```
+
+2. Ejecuta la herramienta:
+   ```
+   python -m auto_py_to_exe
+   ```
+
+3. En la interfaz de auto-py-to-exe, configura lo siguiente:
+
+   a) Script Location:
+      - Selecciona el archivo "CertManagerPro.py"
+   
+   b) Onefile:
+      - Selecciona "One File"
+   
+   c) Console:
+      - Selecciona "Window Based (hide the console)"
+   
+   d) Icon:
+      - Selecciona el archivo "recursos/certmanager_icon.ico"
+   
+   e) Additional Files:
+      - Agrega la carpeta "recursos" como carpeta adicional
+   
+   f) Advanced:
+      - Output Directory: elige donde quieres guardar el ejecutable
+      - Name: "CertManagerPro"
+
+4. Haz clic en "CONVERT .PY TO .EXE"
+
+5. Una vez completada la compilación, encontrarás el archivo "CertManagerPro.exe" en el directorio de salida seleccionado.
+
+IMPORTANTE: 
+- El ejecutable generado incluirá todas las dependencias necesarias.
+- La primera ejecución puede tardar un poco más.
+- Distribuye el ejecutable junto con la carpeta "recursos" a menos que hayas incluido esta carpeta en los archivos adicionales.
