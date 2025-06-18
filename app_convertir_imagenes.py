@@ -187,13 +187,34 @@ class MainWindow(QMainWindow):
         
         # Atributos para los archivos y eventos
         self.archivo_excel = ""
-        self.directorio_base = os.path.dirname(os.path.abspath(__file__))
+        
+        # Usar una ubicación amigable para el usuario (carpeta Documentos)
+        try:
+            # Obtener la carpeta de documentos del usuario
+            documentos_dir = os.path.join(os.path.expanduser("~"), "Documents")
+            if not os.path.exists(documentos_dir):
+                documentos_dir = os.path.join(os.path.expanduser("~"), "Documentos")  # Para sistemas en español
+            
+            # Crear directorio de aplicación dentro de Documentos
+            app_dir = os.path.join(documentos_dir, "CertManagerPro")
+            if not os.path.exists(app_dir):
+                os.makedirs(app_dir)
+            
+            self.directorio_base = app_dir
+        except Exception:
+            # Si hay algún error, usar directorio local como respaldo
+            self.directorio_base = os.path.dirname(os.path.abspath(__file__))
+            self.log_mensaje("⚠️ No se pudo acceder a la carpeta Documentos, usando directorio local.")
+        
+        # Definir directorio de eventos
         self.directorio_eventos = os.path.join(self.directorio_base, "eventos")
         
         # Crear directorio de eventos si no existe
         if not os.path.exists(self.directorio_eventos):
             os.makedirs(self.directorio_eventos)
             self.log_mensaje(f"✅ Directorio de eventos creado: {self.directorio_eventos}")
+        else:
+            self.log_mensaje(f"📁 Usando directorio de eventos: {self.directorio_eventos}")
         
         # Cargar eventos existentes
         self.cargar_eventos_disponibles()
