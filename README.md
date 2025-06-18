@@ -133,7 +133,7 @@ Este proyecto está licenciado bajo la [Licencia MIT](LICENSE).
 
 ## Autor
 
-Desarrollado por [Tu Nombre o Empresa] - [tu.email@ejemplo.com]
+Desarrollado por [Ricardo Gastón Plazas] - [rgplazas1990@gmail.com]
 
 ---
 
