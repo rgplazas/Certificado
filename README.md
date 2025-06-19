@@ -6,11 +6,26 @@
 
 ### Solución profesional para la gestión y conversión de certificados PDF
 
-[![Versión](https://img.shields.io/badge/Versi%C3%B3n-v1.0.0-blue)](https://github.com/rgplazas/Certificado/releases)
+[![Versión](https://img.shields.io/badge/Versi%C3%B3n-v1.2.0-blue)](https://github.com/rgplazas/Certificado/releases)
 [![Licencia](https://img.shields.io/badge/Licencia-MIT-green)](LICENSE)
 [![Plataforma](https://img.shields.io/badge/Plataforma-Windows-lightgrey)](#)
 
 </div>
+
+## 🚨 ÚLTIMAS ACTUALIZACIONES
+
+### Versión 1.2.0 - Interfaz moderna y mejorada UX (Junio 2025)
+- ✨ **Interfaz gráfica completamente rediseñada** con estilos modernos y profesionales
+- 💻 **Mejor organización visual** con agrupación lógica de controles y colores temáticos
+- 📎 **Lista visual de imágenes seleccionadas** con contador y tooltips informativos
+- ℹ️ **Sistema de log mejorado** con formato HTML, colores y iconos para mejor legibilidad
+- 📈 **Barra de estado contextual** con información relevante en tiempo real
+
+### Versión 1.1.0 - Almacenamiento mejorado (Mayo 2025)
+- 🗂️ **Ubicación de datos optimizada** en la carpeta Documentos del usuario
+- 🔑 **Estructura de carpetas persistente** entre sesiones para mejor experiencia
+- 📂 **Organización automática** de archivos por tipos y eventos
+- 🔄 **Recarga automática** de eventos disponibles
 
 ## 📋 Descripción
 
@@ -36,6 +51,7 @@ CertManager Pro es una aplicación con interfaz gráfica intuitiva que transform
 - Procesador: 1.5 GHz o superior
 - RAM: 2 GB o superior
 - Espacio en disco: 100 MB para la aplicación
+- Espacio adicional: Variable según el volumen de certificados (~5-20 MB por cada 100 certificados)
 
 **Software necesario** (para la versión Python):
 - Python 3.8 o superior
@@ -48,6 +64,10 @@ CertManager Pro es una aplicación con interfaz gráfica intuitiva que transform
   ```
   
 > **Nota**: La versión ejecutable no requiere ninguna instalación adicional de software.
+
+**Almacenamiento de datos**:
+- Los archivos generados se almacenan en `C:\Users\[Usuario]\Documents\CertManagerPro\`
+- Esta ubicación optimiza la seguridad y la facilidad de acceso para el usuario
 
 ## 📍 Instalación
 
@@ -115,42 +135,66 @@ CertManager Pro es una aplicación con interfaz gráfica intuitiva que transform
 
 ## 💿 Estructura del Proyecto
 
+### Código fuente
 ```
 Certificado/
-├── CertManagerPro.py           # Punto de entrada principal 
-├── app_convertir_imagenes.py   # Núcleo de la aplicación
-├── recursos/                   # Recursos gráficos
-│   ├── certmanager_logo.png
-│   ├── certmanager_icon.ico
-│   └── certmanager_icon.png
-├── README.md                  # Documentación principal
-├── LICENSE                     # Licencia MIT
-└── eventos/                   # Estructura de datos organizada
-    ├── evento1/                # Carpeta para cada evento
-    │   ├── csv/               # Archivos CSV de nombres
-    │   │   └── imagenes.csv
-    │   ├── imagenes/          # Imágenes PNG originales
-    │   └── PDFs/              # PDFs generados
-    ├── evento2/
-    └── ...
+├─ CertManagerPro.py           # Punto de entrada principal 
+├─ app_convertir_imagenes.py   # Núcleo de la aplicación
+├─ recursos/                   # Recursos gráficos
+│   ├─ certmanager_logo.png
+│   ├─ certmanager_icon.ico
+│   └─ certmanager_icon.png
+├─ README.md                  # Documentación principal
+└─ LICENSE                     # Licencia MIT
 ```
 
-## 💡 Roadmap: Futuras Mejoras
+### Almacenamiento de datos (ubicado en Documents)
+```
+C:\Users\[Usuario]\Documents\CertManagerPro\
+└─ eventos/                   # Estructura de datos organizada
+    ├─ evento1/                # Carpeta para cada evento
+    │   ├─ csv/               # Archivos CSV de nombres
+    │   │   └─ imagenes.csv
+    │   ├─ imagenes/          # Imágenes PNG originales
+    │   └─ PDFs/              # PDFs generados
+    ├─ evento2/
+    └─ ...
+```
+
+> **Nota**: Esta nueva estructura separa el código fuente de los datos generados, mejorando la seguridad y facilitando las copias de seguridad.
+
+## 💡 Roadmap: Mejoras Implementadas y Futuras
 
 Nuestro plan de desarrollo para CertManager Pro incluye las siguientes mejoras:
 
-### 🟡 Versión 1.1 - Experiencia mejorada
+### ✅ Implementado en v1.2.0 (Junio 2025)
+- [x] Interfaz moderna con estilos profesionales
+- [x] Organización visual mejorada con agrupación lógica
+- [x] Lista visual de imágenes seleccionadas con contador
+- [x] Sistema de log mejorado con formato HTML
+- [x] Barra de estado contextual en tiempo real
+
+### ✅ Corrección y mejoras (Junio 2025 - Hotfix)
+- [x] Solucionado problema con la validación de nombres de eventos
+- [x] Mejorados tooltips dinámicos con indicaciones contextuales
+- [x] Validación en tiempo real del formulario
+
+### ✅ Implementado en v1.1.0 (Mayo 2025)
+- [x] Almacenamiento optimizado en Documents del usuario
+- [x] Estructura de carpetas persistente entre sesiones
+- [x] Organización automática de archivos
+- [x] Recarga automática de eventos disponibles
+
+### 🟡 Próximas mejoras (v1.3)
 - [ ] Vista previa de imágenes seleccionadas en miniaturas
 - [ ] Panel de configuración avanzada de PDF (resolución, orientación)
-- [ ] Herramientas básicas de ajuste de imágenes (rotación, recorte, brillo/contraste)
-
-### 🟠 Versión 1.2 - Gestión de eventos
+- [ ] Herramientas básicas de ajuste de imágenes (rotación, recorte)
 - [ ] Herramientas para duplicar, eliminar y buscar eventos
+
+### 🟠 Futuras versiones (v1.4+)
 - [ ] Previsualización del PDF antes de generar
 - [ ] Opción para fusionar múltiples PDFs en un solo documento
 - [ ] Filtrado y búsqueda en el registro de actividad
-
-### 🟢 Versión 1.3 - Personalización 
 - [ ] Temas de interfaz (claro/oscuro/personalizado)
 - [ ] Perfiles de configuración guardados
 - [ ] Compatibilidad con más formatos de imagen (JPG, TIFF, BMP, etc.)

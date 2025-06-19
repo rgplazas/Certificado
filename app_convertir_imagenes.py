@@ -226,6 +226,7 @@ class MainWindow(QMainWindow):
         self.label_evento.setStyleSheet("font-weight: bold;")
         self.input_evento = QLineEdit()
         self.input_evento.setPlaceholderText("Ingrese nombre del evento o categoría")
+        self.input_evento.textChanged.connect(self.actualizar_estado_btn_convertir)
         self.btn_cargar_eventos = QPushButton("🔄 Actualizar")
         self.btn_cargar_eventos.setStyleSheet(BUTTON_STYLE)
         self.btn_cargar_eventos.setToolTip("Actualizar la lista de eventos disponibles")
@@ -553,9 +554,26 @@ class MainWindow(QMainWindow):
         self.log_mensaje(f"📂 Evento seleccionado: {seleccion}")
     
     def actualizar_estado_btn_convertir(self):
+        # Obtener y validar el texto del campo de evento
+        nombre_evento = self.input_evento.text().strip()
+        tiene_evento = bool(nombre_evento)
+        
+        # Actualizar la propiedad nombre_evento si hay texto
+        if tiene_evento:
+            self.nombre_evento = nombre_evento
+        
         # Habilitar el botón de conversión solo si hay Excel, imágenes y nombre de evento
-        tiene_evento = bool(self.input_evento.text().strip())
         self.btn_convertir.setEnabled(bool(self.archivo_excel and self.imagenes_seleccionadas and tiene_evento))
+        
+        # Actualizar tooltip del botón de conversión
+        if not self.archivo_excel:
+            self.btn_convertir.setToolTip("Debe seleccionar un archivo Excel primero")
+        elif not self.imagenes_seleccionadas:
+            self.btn_convertir.setToolTip("Debe seleccionar al menos una imagen PNG")
+        elif not tiene_evento:
+            self.btn_convertir.setToolTip("Debe ingresar un nombre para el evento o categoría")
+        else:
+            self.btn_convertir.setToolTip("Iniciar el proceso de conversión de imágenes a PDF")
     
     def log_mensaje(self, mensaje, tipo='info'):
         """Registra un mensaje en el área de log con formato HTML y colores"""
