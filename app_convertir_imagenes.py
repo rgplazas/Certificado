@@ -1,17 +1,152 @@
 import os
 import sys
-import shutil
 import pandas as pd
+import shutil
 import datetime
-from PyQt5.QtWidgets import (QApplication, QMainWindow, QPushButton, QLabel, 
-                            QVBoxLayout, QHBoxLayout, QFileDialog, QWidget, 
-                            QProgressBar, QMessageBox, QTextEdit, QGroupBox,
-                            QLineEdit, QComboBox, QScrollArea, QFrame, QGridLayout,
-                            QSizePolicy, QSpacerItem, QTabWidget, QToolButton,
-                            QStatusBar, QListWidget, QListWidgetItem)
-from PyQt5.QtCore import Qt, QThread, pyqtSignal, QSize, QTimer, QUrl
-from PyQt5.QtGui import QIcon, QPixmap, QFont, QColor, QPalette, QDesktopServices
-from PIL import Image, ImageQt
+import platform
+import io
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
+                             QLabel, QPushButton, QFileDialog, QComboBox, QLineEdit, QGroupBox,
+                             QTextEdit, QListWidget, QListWidgetItem, QProgressBar, QMessageBox,
+                             QStatusBar, QDialog, QGridLayout, QScrollArea, QSizePolicy,
+                             QSpacerItem, QTabWidget, QToolButton)
+from PyQt5.QtCore import Qt, QThread, pyqtSignal, QTimer, QSize, QUrl
+from PyQt5.QtGui import QIcon, QPixmap, QImage, QFont, QColor, QPalette, QDesktopServices
+from PIL import Image
+
+class ImagenThumbnailWidget(QListWidget):
+    """Widget personalizado para mostrar miniaturas de imágenes con vista previa"""
+    imagenClicada = pyqtSignal(str)  # Señal para emitir cuando se hace clic en una imagen
+    
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setViewMode(QListWidget.IconMode)
+        self.setIconSize(QSize(90, 90))  # Imágenes un poco más grandes
+        self.setResizeMode(QListWidget.Adjust)
+        self.setMovement(QListWidget.Static)
+        self.setSelectionMode(QListWidget.ExtendedSelection)
+        self.setSpacing(12)  # Más espacio entre items
+        self.setGridSize(QSize(120, 140))  # Más espacio para ícono + texto
+        self.setWordWrap(True)  # Permitir ajuste de texto
+        self.itemDoubleClicked.connect(self.on_item_doble_clic)
+        self.setUniformItemSizes(True)
+        self.setTextElideMode(Qt.ElideMiddle)  # Truncar en el medio si no cabe
+        
+        # Mejorar estilo para evitar superposiciones
+        self.setStyleSheet("""
+            QListWidget {
+                background-color: #f8f9fa;
+                border: 1px solid #bdc3c7;
+                border-radius: 5px;
+            }
+            QListWidget::item {
+                background-color: white;
+                border: 1px solid #e0e0e0;
+                border-radius: 5px;
+                margin: 8px;
+                padding-bottom: 10px; /* Espacio adicional abajo para el texto */
+            }
+            QListWidget::item:selected {
+                background-color: #d6eaf8;
+                border: 1px solid #3498db;
+            }
+        """)
+    
+    def agregar_imagen(self, ruta_imagen):
+        """Agrega una imagen con su miniatura al widget"""
+        try:
+            nombre_archivo = os.path.basename(ruta_imagen)
+            
+            # Crear miniatura
+            imagen_pil = Image.open(ruta_imagen)
+            imagen_pil.thumbnail((80, 80), Image.LANCZOS)
+            
+            # Convertir imagen PIL a QPixmap usando un buffer de memoria
+            buffer = io.BytesIO()
+            # Guardar en formato PNG para preservar transparencia si existe
+            imagen_pil.save(buffer, format='PNG')
+            buffer.seek(0)
+            
+            # Crear QImage desde los datos binarios y convertir a QPixmap
+            qimg = QImage.fromData(buffer.getvalue())
+            pixmap = QPixmap.fromImage(qimg)
+            
+            # Crear item y configurarlo
+            item = QListWidgetItem(self)
+            item.setIcon(QIcon(pixmap))
+            # Acortar nombre para mejor visualización
+            nombre_corto = nombre_archivo[:12] + '...' if len(nombre_archivo) > 12 else nombre_archivo
+            item.setText(nombre_corto)
+            item.setData(Qt.UserRole, ruta_imagen)  # Guardar ruta completa
+            item.setToolTip(f"Nombre: {nombre_archivo}\nRuta: {ruta_imagen}\n\nDoble clic para ver en tamaño completo")
+            
+            # Añadir al widget
+            self.addItem(item)
+            return True
+            
+        except Exception as e:
+            print(f"Error al cargar miniatura: {str(e)}")
+            return False
+    
+    def on_item_doble_clic(self, item):
+        """Emitir señal cuando se hace doble clic en una imagen"""
+        ruta_imagen = item.data(Qt.UserRole)
+        self.imagenClicada.emit(ruta_imagen)
+    
+    def limpiar(self):
+        """Limpiar todas las miniaturas"""
+        self.clear()
+
+class VisorImagenDialog(QDialog):
+    """Diálogo para mostrar una imagen en tamaño completo"""
+    def __init__(self, ruta_imagen, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Vista previa de la imagen")
+        self.setMinimumSize(600, 500)
+        self.setModal(True)
+        
+        # Cargar imagen
+        self.pixmap = QPixmap(ruta_imagen)
+        
+        # Layout principal
+        layout = QVBoxLayout(self)
+        
+        # Área de desplazamiento para la imagen
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        
+        # Widget contenedor para la imagen
+        content_widget = QWidget()
+        content_layout = QVBoxLayout(content_widget)
+        
+        # Label para la imagen
+        self.image_label = QLabel()
+        self.image_label.setAlignment(Qt.AlignCenter)
+        self.image_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.ajustar_imagen()
+        
+        # Botón para cerrar
+        btn_cerrar = QPushButton("Cerrar")
+        btn_cerrar.clicked.connect(self.close)
+        
+        # Añadir widgets a los layouts
+        content_layout.addWidget(self.image_label)
+        scroll_area.setWidget(content_widget)
+        layout.addWidget(scroll_area)
+        layout.addWidget(btn_cerrar)
+        
+    def ajustar_imagen(self):
+        """Ajustar la imagen al tamaño del contenedor"""
+        # Escalar la imagen manteniendo proporciones
+        scaled_pixmap = self.pixmap.scaled(
+            self.width() - 30, self.height() - 50,
+            Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        self.image_label.setPixmap(scaled_pixmap)
+        
+    def resizeEvent(self, event):
+        """Reescalar la imagen cuando se redimensiona el diálogo"""
+        self.ajustar_imagen()
+        super().resizeEvent(event)
 
 class ConvertidorThread(QThread):
     """Hilo para procesar la conversión de imágenes a PDF"""
@@ -295,15 +430,36 @@ class MainWindow(QMainWindow):
         self.btn_imagenes.setToolTip("Seleccionar una o múltiples imágenes en formato PNG")
         self.btn_imagenes.clicked.connect(self.seleccionar_imagenes)
         
-        # Lista para mostrar imágenes seleccionadas
-        self.lista_imagenes = QListWidget()
-        self.lista_imagenes.setStyleSheet("border: 1px solid #bdc3c7; border-radius: 3px;")
-        self.lista_imagenes.setAlternatingRowColors(True)
-        self.lista_imagenes.setMaximumHeight(100)
+        # Contenedor para miniaturas y su información
+        miniaturas_container = QWidget()
+        miniaturas_layout = QVBoxLayout(miniaturas_container)
+        miniaturas_layout.setContentsMargins(0, 0, 0, 0)
+        miniaturas_layout.setSpacing(2)
+        
+        # Etiqueta informativa para las miniaturas - colocada arriba
+        info_miniaturas = QLabel("✨ Doble clic en una imagen para ver en tamaño completo ✨")
+        info_miniaturas.setStyleSheet("""
+            color: #3498db; 
+            font-style: italic; 
+            font-size: 9px; 
+            background-color: #ecf0f1; 
+            border-radius: 2px; 
+            padding: 3px;
+        """)
+        info_miniaturas.setAlignment(Qt.AlignCenter)
+        
+        # Widget de miniaturas para mostrar imágenes seleccionadas
+        self.lista_imagenes = ImagenThumbnailWidget()
+        self.lista_imagenes.setMinimumHeight(200)  # Más espacio para las miniaturas
+        self.lista_imagenes.imagenClicada.connect(self.mostrar_vista_previa)
+        
+        # Añadir en orden: primero la etiqueta informativa, luego las miniaturas
+        miniaturas_layout.addWidget(info_miniaturas)
+        miniaturas_layout.addWidget(self.lista_imagenes)
         
         imagenes_layout.addLayout(imagen_contador_layout)
         imagenes_layout.addWidget(self.btn_imagenes)
-        imagenes_layout.addWidget(self.lista_imagenes)
+        imagenes_layout.addWidget(miniaturas_container)  # Agregar el contenedor que tiene las miniaturas y la etiqueta
         grupo_imagenes.setLayout(imagenes_layout)
         
         # Sección para comenzar la conversión - Grupo 4
@@ -489,21 +645,43 @@ class MainWindow(QMainWindow):
             # Actualizar el contador
             self.contador_imagenes.setText(str(len(archivos)))
             
-            # Actualizar la lista de imágenes
-            self.lista_imagenes.clear()
+            # Limpiar y actualizar el widget de miniaturas
+            self.lista_imagenes.limpiar()
+            
+            # Indicar que estamos cargando miniaturas
+            self.statusBar.showMessage("Cargando miniaturas de las imágenes...")
+            QApplication.processEvents()  # Actualizar la interfaz
+            
+            # Contador para estadísticas
+            cargadas = 0
+            errores = 0
+            
+            # Cargar miniaturas de imágenes
             for archivo in archivos:
-                nombre_archivo = os.path.basename(archivo)
-                item = QListWidgetItem(nombre_archivo)
-                item.setToolTip(archivo)  # Mostrar ruta completa al pasar el mouse
-                self.lista_imagenes.addItem(item)
+                if self.lista_imagenes.agregar_imagen(archivo):
+                    cargadas += 1
+                else:
+                    errores += 1
             
             # Habilitar botón de conversión
-            self.btn_convertir.setEnabled(True)
+            self.actualizar_estado_btn_convertir()
             
-            # Mostrar mensaje en el log con estilo
-            self.log_area.append(f"<span style='color:#2ecc71;'>✅ Se seleccionaron {len(archivos)} imágenes.</span>")
+            # Reportar resultados en el log
+            if errores == 0:
+                self.log_mensaje(f"Se cargaron {cargadas} miniaturas de imágenes correctamente.", tipo='success')
+            else:
+                self.log_mensaje(f"Se cargaron {cargadas} miniaturas. Hubo problemas con {errores} imágenes.", tipo='warning')
+            
             # Actualizar barra de estado
-            self.statusBar.showMessage(f"Listo para procesar {len(archivos)} imágenes", 5000)
+            self.statusBar.showMessage(f"Listo para procesar {len(archivos)} imágenes | Doble clic para ver una previsualización", 5000)
+    
+    def mostrar_vista_previa(self, ruta_imagen):
+        """Mostrar vista previa de la imagen en tamaño completo"""
+        try:
+            visor = VisorImagenDialog(ruta_imagen, self)
+            visor.exec_()  # Mostrar diálogo modal
+        except Exception as e:
+            self.log_mensaje(f"Error al mostrar la vista previa: {str(e)}", tipo='error')
     
     def cargar_eventos_disponibles(self):
         """Cargar los eventos disponibles en el directorio de eventos"""
