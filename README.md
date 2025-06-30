@@ -65,9 +65,28 @@ CertManager Pro es una aplicación con interfaz gráfica intuitiva que transform
   
 > **Nota**: La versión ejecutable no requiere ninguna instalación adicional de software.
 
-**Almacenamiento de datos**:
-- Los archivos generados se almacenan en `C:\Users\[Usuario]\Documents\CertManagerPro\`
-- Esta ubicación optimiza la seguridad y la facilidad de acceso para el usuario
+**Almacenamiento de datos y estructura de archivos**:
+
+CertManager Pro organiza sus archivos de forma automática siguiendo esta estructura:
+
+```
+C:\Users\[Usuario]\Documents\CertManagerPro\           # Directorio principal
+├── Eventos\                                     # Todos los eventos/categorías
+    ├── [Nombre del Evento 1]\                    # Un evento específico
+    │   ├── csv\                               # Archivos CSV exportados
+    │   ├── imagenes\                          # Imágenes originales copiadas
+    │   └── PDFs\                              # PDFs generados con nombres nuevos
+    ├── [Nombre del Evento 2]\                    # Otro evento
+    │   ├── csv\
+    │   ├── imagenes\
+    │   └── PDFs\
+    └── ...
+```
+
+- **Estructura automática**: La aplicación crea esta estructura de carpetas automáticamente
+- **Persistencia**: Los archivos se conservan entre sesiones para acceso fácil y posterior
+- **Copias de seguridad**: Las imágenes originales se copian al directorio del evento (no se modifican las originales)
+- **Fácil acceso**: Todos los PDFs generados se guardan en la subcarpeta `PDFs` de cada evento
 
 ## 📍 Instalación
 
@@ -116,9 +135,22 @@ CertManager Pro es una aplicación con interfaz gráfica intuitiva que transform
 #### 2⃣ Importa Datos desde Excel
 
 - Haz clic en "Seleccionar Excel"
-- El archivo debe contener dos columnas principales:
-  - `original`: Identificador de la imagen (sin extensión .png)
-  - `nuevo`: Nombre deseado para el PDF de salida
+- Se mostrará una ventana con instrucciones detalladas sobre el formato requerido
+- **Requisitos del archivo Excel**:
+  - Debe contener exactamente estas dos columnas:
+    - `original`: Nombres de los archivos de imagen sin la extensión `.png` (deben coincidir con los nombres de las imágenes seleccionadas)
+    - `nuevo`: Nombres que tendrán los PDFs generados (nombres de los participantes/certificados)
+  - No puede contener celdas vacías ni valores nulos
+  - Cada fila representa un certificado a generar
+
+**Ejemplo de archivo Excel válido**:
+
+| original | nuevo           |
+|----------|----------------|
+| img1     | Juan Pérez     |
+| img2     | María González |
+| img3     | Carlos Martínez |
+
 - Formatos soportados: `.xlsx`, `.xls`
 
 #### 3⃣ Selecciona Imágenes

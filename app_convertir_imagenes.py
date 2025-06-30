@@ -956,6 +956,30 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "Error", "Debe seleccionar o crear un evento primero")
             return
             
+        # Mostrar instrucciones sobre el formato del Excel antes de seleccionar
+        instrucciones = QMessageBox()
+        instrucciones.setIcon(QMessageBox.Information)
+        instrucciones.setWindowTitle("Formato del archivo Excel")
+        instrucciones.setText("El archivo Excel debe cumplir los siguientes requisitos:")
+        instrucciones.setInformativeText("""
+        1. Debe tener una columna llamada 'original' con los nombres de las imágenes a procesar
+        2. Debe tener una columna llamada 'nuevo' con los nombres que tendrán los PDFs generados
+        3. Los nombres en 'original' deben coincidir con los nombres de archivo de las imágenes (sin la extensión)
+        4. Cada fila representa un certificado a generar
+        5. No debe tener filas vacías o datos faltantes
+        
+        Ejemplo:
+        | original | nuevo           |
+        |----------|----------------|
+        | img1     | Juan Pérez     |
+        | img2     | María González |
+        """)
+        instrucciones.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        respuesta = instrucciones.exec_()
+        
+        if respuesta == QMessageBox.Cancel:
+            return
+        
         opciones = QFileDialog.Options()
         archivo, _ = QFileDialog.getOpenFileName(
             self, "Seleccionar archivo Excel", "",
@@ -966,11 +990,27 @@ class MainWindow(QMainWindow):
             try:
                 # Verificar si el archivo tiene las columnas necesarias
                 df = pd.read_excel(archivo)
-                if 'original' not in df.columns or 'nuevo' not in df.columns:
-                    QMessageBox.warning(
-                        self, "Error", 
-                        "El archivo Excel debe tener las columnas 'original' y 'nuevo'"
-                    )
+                
+                # Validaciones más completas del archivo Excel
+                errores = []
+                
+                if 'original' not in df.columns:
+                    errores.append("Falta la columna 'original' en el archivo")
+                    
+                if 'nuevo' not in df.columns:
+                    errores.append("Falta la columna 'nuevo' en el archivo")
+                    
+                # Verificar que no haya valores vacíos
+                if 'original' in df.columns and df['original'].isnull().any():
+                    errores.append("La columna 'original' tiene valores vacíos")
+                    
+                if 'nuevo' in df.columns and df['nuevo'].isnull().any():
+                    errores.append("La columna 'nuevo' tiene valores vacíos")
+                    
+                # Si hay errores, mostrarlos todos juntos
+                if errores:
+                    mensaje_error = "\n\n".join(errores)
+                    QMessageBox.warning(self, "Error en el archivo Excel", mensaje_error)
                     return
                 
                 # Guardar referencia al archivo
@@ -1249,11 +1289,54 @@ class MainWindow(QMainWindow):
         if exito:
             # Mensaje con estilo de éxito
             self.log_mensaje("La conversión ha finalizado con éxito.", tipo='success')
-            QMessageBox.information(self, "Conversión Completada", "✨ La conversión ha finalizado con éxito. ✨\n\nLos archivos PDF se han guardado en la carpeta del evento.")
+            
+            # Obtener rutas para mostrar
+            directorio_evento = self.obtener_directorio_evento(self.nombre_evento)
+            directorio_pdfs = os.path.join(directorio_evento, "PDFs")
+            directorio_imagenes = os.path.join(directorio_evento, "imagenes")
+            ruta_relativa = os.path.join("Documentos", "CertManagerPro", "Eventos", self.nombre_evento, "PDFs")
+            
+            # Registrar las rutas en el log para referencia futura
+            self.log_mensaje(f"📁 PDFs guardados en: {ruta_relativa}", tipo='info')
+            
+            # Crear un diálogo informativo detallado
+            mensaje = QMessageBox(self)
+            mensaje.setWindowTitle("✅ Conversión Completada")
+            mensaje.setIcon(QMessageBox.Information)
+            mensaje.setText("✨ La conversión ha finalizado con éxito. ✨")
+            mensaje.setInformativeText(
+                f"<b>Sus archivos han sido guardados en:</b><br><br>"
+                f"📂 <b>{ruta_relativa}</b><br><br>"
+                f"<i>Esta carpeta se encuentra dentro de sus documentos personales.</i>"
+            )
+            mensaje.setDetailedText(
+                f"INFORMACIÓN DETALLADA DE UBICACIONES:\n\n"
+                f"• PDFs generados:\n  {directorio_pdfs}\n\n"
+                f"• Imágenes copiadas:\n  {directorio_imagenes}\n\n"
+                f"Los archivos quedan guardados permanentemente en estas carpetas "
+                f"y estarán disponibles incluso después de cerrar la aplicación."
+            )
+            
+            # Añadir botones para abrir la carpeta o simplemente cerrar
+            mensaje.setStandardButtons(QMessageBox.Open | QMessageBox.Close)
+            mensaje.setDefaultButton(QMessageBox.Open)
+            mensaje.button(QMessageBox.Open).setText("Abrir Carpeta")
+            mensaje.button(QMessageBox.Close).setText("Cerrar")
+            
+            # Mostrar y procesar respuesta
+            respuesta = mensaje.exec_()
+            
+            if respuesta == QMessageBox.Open:
+                # Abrir la carpeta con el explorador de archivos
+                try:
+                    if os.path.exists(directorio_pdfs):
+                        os.startfile(directorio_pdfs)  # En Windows
+                    else:
+                        self.log_mensaje(f"No se pudo abrir la carpeta: {directorio_pdfs}", tipo='warning')
+                except Exception as e:
+                    self.log_mensaje(f"Error al abrir la carpeta: {str(e)}", tipo='error')
             
             # Muestra la ruta de salida en la barra de estado para facilitar la ubicación
-            directorio_evento = self.obtener_directorio_evento(self.nombre_evento)
-            directorio_pdfs = os.path.join(directorio_evento, "pdfs")
             self.statusBar.showMessage(f"✅ Conversión exitosa! PDFs guardados en: {directorio_pdfs}", 10000)
         else:
             # Mensaje con estilo de error
