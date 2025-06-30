@@ -215,43 +215,54 @@ C:\Users\[Usuario]\Documents\CertManagerPro\
 
 > **Nota**: Esta nueva estructura separa el código fuente de los datos generados, mejorando la seguridad y facilitando las copias de seguridad.
 
-## 💡 Roadmap: Mejoras Implementadas y Futuras
+## 💡 Historial y Roadmap
 
-Nuestro plan de desarrollo para CertManager Pro incluye las siguientes mejoras:
+### 🗓️ Versiones publicadas
 
-### ✅ Implementado en v1.2.0 (Junio 2025)
-- [x] Interfaz moderna con estilos profesionales
-- [x] Organización visual mejorada con agrupación lógica
-- [x] Lista visual de imágenes seleccionadas con contador
-- [x] Sistema de log mejorado con formato HTML
-- [x] Barra de estado contextual en tiempo real
+#### Versión 1.3.1 (Julio 2025) - Mejora de validación y feedback
+- ✅ Validación mejorada de archivos Excel con instrucciones detalladas
+- ✅ Información clara sobre ubicación de archivos generados
+- ✅ Documentación actualizada con estructura detallada de directorios
 
-### ✅ Corrección y mejoras (Junio 2025 - Hotfix)
-- [x] Solucionado problema con la validación de nombres de eventos
-- [x] Mejorados tooltips dinámicos con indicaciones contextuales
-- [x] Validación en tiempo real del formulario
+#### Versión 1.3.0 (Junio 2025) - Panel de configuración PDF
+- ✅ Vista previa de imágenes con miniaturas y visualización a tamaño completo
+- ✅ Panel de configuración avanzada de PDF (resolución, orientación, márgenes)
+- ✅ Correcciones de estabilidad en métodos y gestión de directorios
 
-### ✅ Implementado en v1.1.0 (Mayo 2025)
-- [x] Almacenamiento optimizado en Documents del usuario
-- [x] Estructura de carpetas persistente entre sesiones
-- [x] Organización automática de archivos
-- [x] Recarga automática de eventos disponibles
+#### Versión 1.2.1 (Junio 2025) - Hotfix
+- ✅ Solucionado problema con la validación de nombres de eventos
+- ✅ Mejorados tooltips dinámicos con indicaciones contextuales
+- ✅ Validación en tiempo real del formulario
 
-### ✅ Implementado en v1.3.1 (Julio 2025)
-- [x] Validación mejorada de archivos Excel con instrucciones detalladas para el usuario
-- [x] Mensajes informativos claros sobre dónde se guardan los archivos generados
-- [x] Documentación actualizada con estructura detallada de directorios
+#### Versión 1.2.0 (Junio 2025) - Interfaz moderna
+- ✅ Interfaz gráfica completamente rediseñada con estilos profesionales
+- ✅ Mejor organización visual con agrupación lógica de elementos
+- ✅ Lista visual de imágenes seleccionadas con contador
+- ✅ Sistema de log mejorado con formato HTML y colores
+- ✅ Barra de estado contextual en tiempo real
 
-### ✅ Implementado en v1.3.0 (Junio 2025)
-- [x] Vista previa de imágenes seleccionadas en miniaturas con visualización a tamaño completo
-- [x] Panel de configuración avanzada de PDF (resolución, orientación, márgenes, calidad)
-- [x] Correcciones de estabilidad (métodos faltantes y gestión de directorios)
+#### Versión 1.1.0 (Mayo 2025) - Almacenamiento mejorado 
+- ✅ Ubicación de datos optimizada en carpeta Documentos
+- ✅ Estructura de carpetas persistente entre sesiones
+- ✅ Organización automática de archivos por eventos
+- ✅ Recarga automática de eventos disponibles
 
-### 🟡 Próximas mejoras (v1.4.0)
-- [ ] Herramientas básicas de ajuste de imágenes (rotación, recorte)
-- [ ] Herramientas para duplicar, eliminar y buscar eventos
+### 💭 Plan de desarrollo
 
-### 🔥 Próxima versión mayor (v2.0.0) - Arquitectura modular
+#### Versión 1.4.0 (Planificada para Q3 2025)
+- 🔍 Herramientas básicas de ajuste de imágenes (rotación, recorte)
+- 📌 Herramientas para duplicar, eliminar y buscar eventos
+- 🔎 Previsualización del PDF antes de generar
+- 🗞️ Opción para fusionar múltiples PDFs en un solo documento
+- 🔍 Filtrado y búsqueda en el registro de actividad
+
+#### Versión 1.5.0 (Planificada para Q4 2025)
+- 🎨 Temas de interfaz (claro/oscuro/personalizado)
+- 💾 Perfiles de configuración guardados 
+- 🌐 Compatibilidad con más formatos de imagen (JPG, TIFF, BMP, etc.)
+- 🖼️ Plantillas predefinidas para certificados
+
+### 🔥 Versión 2.0.0 - Arquitectura modular (Q4 2025 - Q1 2026)
 - [ ] Refactorización completa a arquitectura modular y orientada a objetos
 - [ ] Separación en componentes independientes para mejor mantenimiento
 - [ ] Implementación de patrones de diseño avanzados
@@ -336,20 +347,13 @@ CertManagerPro/
    - Migración de datos de versiones anteriores
    - Guía completa para usuarios y desarrolladores
 
-### 🟠 Futuras versiones (v1.4+)
-- [ ] Previsualización del PDF antes de generar
-- [ ] Opción para fusionar múltiples PDFs en un solo documento
-- [ ] Filtrado y búsqueda en el registro de actividad
-- [ ] Temas de interfaz (claro/oscuro/personalizado)
-- [ ] Perfiles de configuración guardados
-- [ ] Compatibilidad con más formatos de imagen (JPG, TIFF, BMP, etc.)
-- [ ] Plantillas predefinidas para certificados
-
-### 🔵 Versión 2.0 - Productividad profesional
-- [ ] Envío de PDFs por correo electrónico
-- [ ] Integración con servicios en la nube (Google Drive, Dropbox)
-- [ ] Procesamiento en paralelo para grandes volúmenes
-- [ ] API para integración con otros sistemas
+#### Versión 2.1.0 - Productividad profesional (Q1 2026)
+- 📧 Envío de PDFs por correo electrónico
+- ☁️ Integración con servicios en la nube (Google Drive, Dropbox)
+- 💿 Exportación por lotes
+- 📈 Panel de estadísticas de procesamiento
+- ⏱️ Procesamiento en paralelo para grandes volúmenes
+- 🔗 API para integración con otros sistemas
 
 ## 📈 Estadísticas
 
