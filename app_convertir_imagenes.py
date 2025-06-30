@@ -97,6 +97,170 @@ class ImagenThumbnailWidget(QListWidget):
         """Limpiar todas las miniaturas"""
         self.clear()
 
+class ConfiguracionPDFDialog(QDialog):
+    """Diálogo de configuración avanzada para la generación de PDFs"""
+    def __init__(self, parent=None, config=None):
+        super().__init__(parent)
+        self.setWindowTitle("Configuración Avanzada de PDF")
+        self.setMinimumWidth(400)
+        self.setModal(True)
+        
+        # Valores por defecto o recibidos
+        self.config = config or {
+            'resolucion': 100,  # DPI
+            'orientacion': 'auto',  # auto, portrait, landscape
+            'margen': 5,  # mm
+            'calidad': 'normal'  # alta, normal, baja
+        }
+        
+        # Layout principal
+        layout = QVBoxLayout(self)
+        layout.setSpacing(15)
+        
+        # Título del panel
+        titulo = QLabel("📝 Configuración Avanzada de PDF")
+        titulo.setStyleSheet("font-size: 16px; font-weight: bold; color: #3498db; padding: 5px;")
+        titulo.setAlignment(Qt.AlignCenter)
+        layout.addWidget(titulo)
+        
+        # Descripción
+        desc = QLabel("Personaliza cómo se generarán los archivos PDF a partir de tus imágenes.")
+        desc.setStyleSheet("color: #7f8c8d; font-style: italic;")
+        desc.setWordWrap(True)
+        layout.addWidget(desc)
+        
+        # Formulario de ajustes
+        form_layout = QGridLayout()
+        form_layout.setVerticalSpacing(10)
+        form_layout.setHorizontalSpacing(15)
+        
+        # 1. Resolución
+        lbl_res = QLabel("Resolución:")
+        lbl_res.setStyleSheet("font-weight: bold;")
+        self.combo_res = QComboBox()
+        self.combo_res.addItems(["72 DPI (Web)", "100 DPI (Estándar)", "150 DPI (Calidad Media)", "300 DPI (Alta Calidad)"])
+        res_values = {72: 0, 100: 1, 150: 2, 300: 3}
+        self.combo_res.setCurrentIndex(res_values.get(self.config['resolucion'], 1))
+        self.combo_res.setStyleSheet("padding: 4px;")
+        form_layout.addWidget(lbl_res, 0, 0)
+        form_layout.addWidget(self.combo_res, 0, 1)
+        
+        # 2. Orientación
+        lbl_orient = QLabel("Orientación:")
+        lbl_orient.setStyleSheet("font-weight: bold;")
+        self.combo_orient = QComboBox()
+        self.combo_orient.addItems(["Automática", "Vertical (Retrato)", "Horizontal (Paisaje)"])
+        orient_values = {'auto': 0, 'portrait': 1, 'landscape': 2}
+        self.combo_orient.setCurrentIndex(orient_values.get(self.config['orientacion'], 0))
+        self.combo_orient.setStyleSheet("padding: 4px;")
+        form_layout.addWidget(lbl_orient, 1, 0)
+        form_layout.addWidget(self.combo_orient, 1, 1)
+        
+        # 3. Márgenes
+        lbl_margen = QLabel("Márgenes:")
+        lbl_margen.setStyleSheet("font-weight: bold;")
+        self.combo_margen = QComboBox()
+        self.combo_margen.addItems(["Sin márgenes", "Pequeños (5mm)", "Medianos (10mm)", "Grandes (20mm)"])
+        margen_values = {0: 0, 5: 1, 10: 2, 20: 3}
+        self.combo_margen.setCurrentIndex(margen_values.get(self.config['margen'], 1))
+        self.combo_margen.setStyleSheet("padding: 4px;")
+        form_layout.addWidget(lbl_margen, 2, 0)
+        form_layout.addWidget(self.combo_margen, 2, 1)
+        
+        # 4. Calidad de Compresión
+        lbl_calidad = QLabel("Calidad:")
+        lbl_calidad.setStyleSheet("font-weight: bold;")
+        self.combo_calidad = QComboBox()
+        self.combo_calidad.addItems(["Alta (más grande)", "Normal", "Económica (más pequeña)"])
+        calidad_values = {'alta': 0, 'normal': 1, 'baja': 2}
+        self.combo_calidad.setCurrentIndex(calidad_values.get(self.config['calidad'], 1))
+        self.combo_calidad.setStyleSheet("padding: 4px;")
+        form_layout.addWidget(lbl_calidad, 3, 0)
+        form_layout.addWidget(self.combo_calidad, 3, 1)
+        
+        # Añadir formulario al layout principal
+        layout.addLayout(form_layout)
+        
+        # Información adicional
+        info = QLabel("💡 Los cambios se aplicarán a todos los PDFs generados en esta sesión.")
+        info.setStyleSheet("font-style: italic; color: #7f8c8d; font-size: 9px;")
+        info.setAlignment(Qt.AlignCenter)
+        layout.addWidget(info)
+        
+        # Botones
+        btn_layout = QHBoxLayout()
+        
+        btn_default = QPushButton("Restaurar Valores")
+        btn_default.clicked.connect(self.restaurar_default)
+        btn_default.setStyleSheet("""QPushButton { 
+            background-color: #ecf0f1; 
+            color: #7f8c8d; 
+            border: none; 
+            padding: 6px 12px; 
+            border-radius: 3px;
+        }
+        QPushButton:hover {
+            background-color: #bdc3c7;
+            color: #2c3e50;
+        }""")
+        
+        btn_cancel = QPushButton("Cancelar")
+        btn_cancel.clicked.connect(self.reject)
+        btn_cancel.setStyleSheet("""QPushButton { 
+            background-color: #e74c3c; 
+            color: white; 
+            border: none; 
+            padding: 6px 12px; 
+            border-radius: 3px;
+        }
+        QPushButton:hover {
+            background-color: #c0392b;
+        }""")
+        
+        btn_save = QPushButton("Guardar Configuración")
+        btn_save.setDefault(True)
+        btn_save.clicked.connect(self.accept)
+        btn_save.setStyleSheet("""QPushButton { 
+            background-color: #3498db; 
+            color: white; 
+            border: none; 
+            padding: 8px 16px; 
+            border-radius: 3px;
+            font-weight: bold;
+        }
+        QPushButton:hover {
+            background-color: #2980b9;
+        }""")
+        
+        btn_layout.addWidget(btn_default)
+        btn_layout.addStretch()
+        btn_layout.addWidget(btn_cancel)
+        btn_layout.addWidget(btn_save)
+        
+        layout.addLayout(btn_layout)
+        
+    def restaurar_default(self):
+        """Restaura los valores predeterminados"""
+        self.combo_res.setCurrentIndex(1)  # 100 DPI
+        self.combo_orient.setCurrentIndex(0)  # Auto
+        self.combo_margen.setCurrentIndex(1)  # 5mm
+        self.combo_calidad.setCurrentIndex(1)  # Normal
+    
+    def get_config(self):
+        """Obtener la configuración seleccionada"""
+        # Mapear índices de combos a valores reales
+        res_map = {0: 72, 1: 100, 2: 150, 3: 300}
+        orient_map = {0: 'auto', 1: 'portrait', 2: 'landscape'}
+        margen_map = {0: 0, 1: 5, 2: 10, 3: 20}
+        calidad_map = {0: 'alta', 1: 'normal', 2: 'baja'}
+        
+        return {
+            'resolucion': res_map[self.combo_res.currentIndex()],
+            'orientacion': orient_map[self.combo_orient.currentIndex()],
+            'margen': margen_map[self.combo_margen.currentIndex()],
+            'calidad': calidad_map[self.combo_calidad.currentIndex()]
+        }
+
 class VisorImagenDialog(QDialog):
     """Diálogo para mostrar una imagen en tamaño completo"""
     def __init__(self, ruta_imagen, parent=None):
@@ -154,11 +318,18 @@ class ConvertidorThread(QThread):
     log = pyqtSignal(str)
     finalizado = pyqtSignal(bool)
     
-    def __init__(self, archivo_excel, nombre_evento, directorio_eventos):
+    def __init__(self, archivo_excel, nombre_evento, directorio_eventos, pdf_config=None):
         super().__init__()
         self.archivo_excel = archivo_excel
         self.nombre_evento = nombre_evento
         self.directorio_eventos = directorio_eventos
+        # Configuración PDF por defecto si no se proporciona
+        self.pdf_config = pdf_config or {
+            'resolucion': 100,  # DPI
+            'orientacion': 'auto',  # auto, portrait, landscape
+            'margen': 5,  # mm
+            'calidad': 'normal'  # alta, normal, baja
+        }
     
     def run(self):
         try:
@@ -206,9 +377,36 @@ class ConvertidorThread(QThread):
                 if os.path.exists(ruta_imagen):
                     try:
                         with Image.open(ruta_imagen) as img:
+                            # Aplicar configuración de orientación si no es automática
+                            if self.pdf_config['orientacion'] != 'auto':
+                                if self.pdf_config['orientacion'] == 'portrait' and img.width > img.height:
+                                    # Rotar si es necesario para formato vertical
+                                    img = img.rotate(90, expand=True)
+                                elif self.pdf_config['orientacion'] == 'landscape' and img.height > img.width:
+                                    # Rotar si es necesario para formato horizontal
+                                    img = img.rotate(90, expand=True)
+                            
+                            # Convertir si es necesario
                             if img.mode in ("RGBA", "P"):
                                 img = img.convert("RGB")
-                            img.save(ruta_pdf, "PDF", resolution=100.0)
+                            
+                            # Calcular márgenes si son necesarios (en puntos, 1mm = 2.83 puntos)
+                            margen_pts = self.pdf_config['margen'] * 2.83 if self.pdf_config['margen'] > 0 else 0
+                            
+                            # Aplicar calidad según configuración
+                            compress_level = 50  # por defecto
+                            if self.pdf_config['calidad'] == 'alta':
+                                compress_level = 95
+                            elif self.pdf_config['calidad'] == 'baja':
+                                compress_level = 30
+                                
+                            # Guardar con la configuración aplicada
+                            img.save(
+                                ruta_pdf, 
+                                "PDF", 
+                                resolution=float(self.pdf_config['resolucion']),
+                                quality=compress_level)
+                            
                         self.log.emit(f"✅ Convertido: {nombre_original} → {nuevo_nombre}")
                     except Exception as e:
                         self.log.emit(f"⚠️ Error al convertir {nombre_original}: {str(e)}")
@@ -305,23 +503,165 @@ HEADER_STYLE = """
 """
 
 class MainWindow(QMainWindow):
+    """Ventana principal de la aplicación"""
+    
     def __init__(self):
         super().__init__()
-        self.theme_dark = False  # Por defecto usar tema claro
-        self.initUI()
-        self.thread = None
-        self.imagenes_seleccionadas = []
+        self.setWindowTitle('CertManager Pro')
+        self.setMinimumSize(800, 600)
+        
+        # Inicializar variables
+        self.archivo_excel = None
         self.nombre_evento = ""
+        self.imagenes_seleccionadas = []
+        self.directorio_base = None
+        self.directorio_eventos = None
+        self.thread = None
         self.previsualizar_activo = False
+        
+        # Configuración por defecto de PDF
+        self.pdf_config = {
+            'resolucion': 100,  # DPI
+            'orientacion': 'auto',  # auto, portrait, landscape
+            'margen': 5,  # mm
+            'calidad': 'normal'  # alta, normal, baja
+        }
+        
+        # Inicializar la interfaz
+        self.initUI()
+        
+        # Inicializar directorios
+        self.inicializar_directorios()
         
         # Timer para actualizar el estado
         self.status_timer = QTimer(self)
         self.status_timer.timeout.connect(self.actualizar_status)
         self.status_timer.start(3000)  # Actualiza cada 3 segundos
-        
-        # Inicializar variables adicionales para UX mejorada
         self.ultima_conversion = None
         self.conversion_exitosa = False
+        
+    def inicializar_directorios(self):
+        """Inicializa los directorios necesarios para la aplicación"""
+        # Definir directorio base en Documents del usuario
+        usuario_home = os.path.expanduser("~")
+        self.directorio_base = os.path.join(usuario_home, "Documents", "CertManagerPro")
+        
+        # Directorio para eventos
+        self.directorio_eventos = os.path.join(self.directorio_base, "Eventos")
+        
+        # Crear directorios si no existen
+        for directorio in [self.directorio_base, self.directorio_eventos]:
+            if not os.path.exists(directorio):
+                os.makedirs(directorio)
+                print(f"Directorio creado: {directorio}")
+        
+        # Actualizar ComboBox con eventos existentes
+        self.cargar_eventos_disponibles()
+    
+    def obtener_directorio_evento(self, nombre_evento):
+        """Obtiene la ruta completa al directorio de un evento"""
+        return os.path.join(self.directorio_eventos, nombre_evento)
+        
+    def cargar_eventos_disponibles(self):
+        """Carga la lista de eventos disponibles en el ComboBox"""
+        # Limpiar el ComboBox
+        if hasattr(self, 'combo_eventos'):
+            self.combo_eventos.clear()
+            
+            # Obtener la lista de directorios de eventos
+            if os.path.exists(self.directorio_eventos):
+                eventos = [d for d in os.listdir(self.directorio_eventos) 
+                           if os.path.isdir(os.path.join(self.directorio_eventos, d))]
+                
+                # Ordenar por fecha de modificación (más reciente primero)
+                eventos.sort(key=lambda x: os.path.getmtime(os.path.join(self.directorio_eventos, x)), 
+                             reverse=True)
+                
+                # Añadir al ComboBox
+                for evento in eventos:
+                    self.combo_eventos.addItem(evento)
+                
+                if eventos:
+                    if hasattr(self, 'log_text'):
+                        self.log_mensaje(f"Se cargaron {len(eventos)} eventos existentes", tipo='info')
+                    # Seleccionar el evento más reciente
+                    self.combo_eventos.setCurrentIndex(0)
+                    
+    def log_mensaje(self, mensaje, tipo='info'):
+        """Añade un mensaje al registro de la aplicación"""
+        if hasattr(self, 'log_text'):
+            # Obtener fecha y hora actual
+            timestamp = datetime.datetime.now().strftime("%H:%M:%S")
+            
+            # Definir colores para diferentes tipos de mensajes
+            color = "#2c3e50"  # Color predeterminado (gris oscuro)
+            if tipo == 'error':
+                color = "#e74c3c"  # Rojo
+                mensaje = f"❌ ERROR: {mensaje}"
+            elif tipo == 'warning':
+                color = "#f39c12"  # Naranja
+                mensaje = f"⚠️ {mensaje}"
+            elif tipo == 'success':
+                color = "#27ae60"  # Verde
+                mensaje = f"✅ {mensaje}"
+            elif tipo == 'info':
+                color = "#2980b9"  # Azul
+                mensaje = f"ℹ️ {mensaje}"
+            
+            # Crear HTML formateado
+            html = f"<span style='color:{color};'>[{timestamp}] {mensaje}</span>"
+            
+            # Añadir al QTextEdit
+            self.log_text.append(html)
+            
+            # Actualizar barra de estado para mensajes importantes
+            if tipo in ['error', 'success']:
+                self.statusBar.showMessage(mensaje, 5000)
+                
+    def actualizar_status(self):
+        """Actualiza la barra de estado con información relevante"""
+        # Determinar mensaje apropiado
+        if self.thread and self.thread.isRunning():
+            # Si hay un proceso de conversión activo
+            mensaje = "⏳ Conversión en progreso..."
+        elif hasattr(self, 'ultima_conversion') and self.ultima_conversion:
+            # Tiempo desde la última conversión
+            tiempo_transcurrido = datetime.datetime.now() - self.ultima_conversion
+            minutos = int(tiempo_transcurrido.total_seconds() / 60)
+            
+            if self.conversion_exitosa:
+                if minutos < 1:
+                    mensaje = "✅ Última conversión exitosa hace menos de un minuto"
+                else:
+                    mensaje = f"✅ Última conversión exitosa hace {minutos} minutos"
+            else:
+                if minutos < 1:
+                    mensaje = "❌ La última conversión falló hace menos de un minuto"
+                else:
+                    mensaje = f"❌ La última conversión falló hace {minutos} minutos"
+        else:
+            # Mensaje por defecto
+            mensaje = "Listo para conversión → Seleccione Excel e imágenes PNG para comenzar"
+            
+        # Actualizar barra de estado
+        self.statusBar.showMessage(mensaje)
+        
+    def actualizar_progreso(self, valor):
+        """Actualiza la barra de progreso y el estado"""
+        # Actualizar barra de progreso
+        if hasattr(self, 'progress_bar'):
+            self.progress_bar.setValue(valor)
+            
+            # Actualizar mensaje de estado para valores significativos
+            if valor == 0:
+                self.statusBar.showMessage("⏳ Iniciando proceso de conversión...")
+            elif valor == 100:
+                self.statusBar.showMessage("✅ ¡Proceso finalizado!")
+            elif valor % 10 == 0:  # Solo actualizar en intervalos de 10%
+                self.statusBar.showMessage(f"Progreso: {valor}% completado")
+                
+            # Mantener la interfaz responsiva
+            QApplication.processEvents()
         
     def set_application_style(self):
         """Aplica estilos modernos a la aplicación"""
@@ -471,6 +811,28 @@ class MainWindow(QMainWindow):
         info_label = QLabel("Al hacer clic en el botón, se crearán PDFs para todas las imágenes seleccionadas.")
         info_label.setStyleSheet("color: #7f8c8d; font-style: italic;")
         
+        # Layout para botones de configuración y conversión
+        btn_horizontal_layout = QHBoxLayout()
+        
+        # Botón de configuración avanzada
+        self.btn_config_pdf = QPushButton("⚙️ Configuración Avanzada PDF")
+        self.btn_config_pdf.setStyleSheet("""QPushButton { 
+            background-color: #f39c12; 
+            color: white; 
+            border: none; 
+            padding: 6px 12px; 
+            border-radius: 3px;
+        }
+        QPushButton:hover {
+            background-color: #d35400;
+        }""")
+        self.btn_config_pdf.setToolTip("Configurar resolución, orientación y otros ajustes para los PDF generados")
+        self.btn_config_pdf.clicked.connect(self.abrir_config_pdf)
+        btn_horizontal_layout.addWidget(self.btn_config_pdf)
+        
+        # Spacer para separar botones
+        btn_horizontal_layout.addStretch()
+        
         # Botón de conversión con estilo destacado
         self.btn_convertir = QPushButton("✨ Convertir Imágenes a PDF ✨")
         self.btn_convertir.setStyleSheet(ACTION_BUTTON_STYLE)
@@ -478,6 +840,7 @@ class MainWindow(QMainWindow):
         self.btn_convertir.setToolTip("Procesar todas las imágenes y crear los archivos PDF")
         self.btn_convertir.clicked.connect(self.iniciar_conversion)
         self.btn_convertir.setEnabled(False)
+        btn_horizontal_layout.addWidget(self.btn_convertir)
         
         # Añadir layout para la barra de progreso
         progreso_layout = QVBoxLayout()
@@ -501,10 +864,10 @@ class MainWindow(QMainWindow):
         progreso_layout.addWidget(progreso_label)
         progreso_layout.addWidget(self.progress_bar)
         
+        # Agregar elementos al layout general
         conversion_layout.addWidget(info_label)
-        conversion_layout.addWidget(self.btn_convertir)
+        conversion_layout.addLayout(btn_horizontal_layout)  # Usar el layout horizontal para los botones
         conversion_layout.addLayout(progreso_layout)
-        
         grupo_conversion.setLayout(conversion_layout)
         
         # Área de log mejorada
@@ -787,17 +1150,24 @@ class MainWindow(QMainWindow):
         cursor.movePosition(cursor.End)
         self.log_area.setTextCursor(cursor)
         
+    def abrir_config_pdf(self):
+        """Abre el diálogo de configuración avanzada de PDF"""
+        dialog = ConfiguracionPDFDialog(self, self.pdf_config)
+        if dialog.exec_():
+            # Actualizar la configuración si el usuario acepta
+            self.pdf_config = dialog.get_config()
+            self.log_mensaje(f"📝 Configuración PDF actualizada: {self.pdf_config['resolucion']} DPI, "
+                       f"orientación {self.pdf_config['orientacion']}, "
+                       f"márgenes {self.pdf_config['margen']}mm")
+    
     def iniciar_conversion(self):
-        """Iniciar el proceso de conversión de imágenes a PDF"""
+        """Inicia el proceso de conversión tras validar"""
         if not self.archivo_excel:
             QMessageBox.warning(self, "Advertencia", "Debe seleccionar un archivo Excel.")
             return
-        
         if not self.imagenes_seleccionadas:
             QMessageBox.warning(self, "Advertencia", "Debe seleccionar al menos una imagen PNG.")
             return
-        
-        # Obtener nombre del evento desde el campo de entrada
         self.nombre_evento = self.input_evento.text().strip()
         if not self.nombre_evento:
             QMessageBox.warning(self, "Advertencia", "Debe ingresar un nombre para el evento o categoría.")
@@ -846,25 +1216,30 @@ class MainWindow(QMainWindow):
         self.btn_excel.setEnabled(False)
         self.btn_imagenes.setEnabled(False)
         self.btn_convertir.setEnabled(False)
+        self.combo_eventos.setEnabled(False)
+        self.input_evento.setEnabled(False)
+        self.btn_config_pdf.setEnabled(False)
         self.progress_bar.setValue(0)
         
-        # Crear y ejecutar el hilo de conversión
-        self.thread = ConvertidorThread(self.archivo_excel, self.nombre_evento, self.directorio_eventos)
+        # Actualizar la barra de estado
+        self.statusBar.showMessage("⌛ Iniciando proceso de conversión...")
+        
+        # Crear el hilo de conversión con la configuración actualizada
+        self.thread = ConvertidorThread(self.archivo_excel, self.nombre_evento, self.directorio_eventos, self.pdf_config)
         self.thread.progreso.connect(self.actualizar_progreso)
         self.thread.log.connect(self.log_mensaje)
         self.thread.finalizado.connect(self.procesar_finalizacion)
         self.thread.start()
-        
-        # Actualizar la barra de estado
-        self.statusBar.showMessage("⏳ Iniciando proceso de conversión...")
-    
-    def actualizar_progreso(self, valor):
-        self.progress_bar.setValue(valor)
     
     def procesar_finalizacion(self, exito):
         """Procesa la finalización del hilo de conversión"""
         self.progress_bar.setValue(100)
         self.btn_convertir.setEnabled(True)
+        self.btn_excel.setEnabled(True)
+        self.btn_imagenes.setEnabled(True)
+        self.combo_eventos.setEnabled(True)
+        self.input_evento.setEnabled(True)
+        self.btn_config_pdf.setEnabled(True)
         self.thread = None
         
         # Guardar estado de la última conversión

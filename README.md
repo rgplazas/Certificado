@@ -187,9 +187,10 @@ Nuestro plan de desarrollo para CertManager Pro incluye las siguientes mejoras:
 
 ### ✅ Implementado en v1.3.0 (Junio 2025)
 - [x] Vista previa de imágenes seleccionadas en miniaturas con visualización a tamaño completo
+- [x] Panel de configuración avanzada de PDF (resolución, orientación, márgenes, calidad)
+- [x] Correcciones de estabilidad (métodos faltantes y gestión de directorios)
 
 ### 🟡 Próximas mejoras (v1.3.1)
-- [ ] Panel de configuración avanzada de PDF (resolución, orientación)
 - [ ] Herramientas básicas de ajuste de imágenes (rotación, recorte)
 - [ ] Herramientas para duplicar, eliminar y buscar eventos
 
