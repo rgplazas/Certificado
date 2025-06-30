@@ -6,13 +6,24 @@
 
 ### Solución profesional para la gestión y conversión de certificados PDF
 
-[![Versión](https://img.shields.io/badge/Versi%C3%B3n-v1.2.0-blue)](https://github.com/rgplazas/Certificado/releases)
+[![Versión](https://img.shields.io/badge/Versi%C3%B3n-v1.3.1-blue)](https://github.com/rgplazas/Certificado/releases)
 [![Licencia](https://img.shields.io/badge/Licencia-MIT-green)](LICENSE)
 [![Plataforma](https://img.shields.io/badge/Plataforma-Windows-lightgrey)](#)
 
 </div>
 
-## 🚨 ÚLTIMAS ACTUALIZACIONES
+## 💨 ÚLTIMAS ACTUALIZACIONES
+
+### Versión 1.3.1 - Mejoras en la experiencia de usuario (Julio 2025)
+- ✅ **Validación mejorada de archivos Excel** con instrucciones detalladas y mensajes claros
+- 📂 **Información clara sobre ubicación de archivos** con mensajes detallados sobre dónde se guardan los PDFs
+- 💡 **Mensajes informativos mejorados** para guiar al usuario durante todo el proceso
+- 🔄 **Actualización de la documentación** con detalles precisos sobre la estructura de archivos
+
+### Versión 1.3.0 - Panel de configuración PDF (Junio 2025)
+- ⚙️ **Panel de configuración avanzada de PDF** con opciones para resolución, orientación, márgenes y calidad
+- 📸 **Vista previa de imágenes** con miniaturas y visualización a tamaño completo
+- 🔧 **Correcciones de estabilidad** con implementación de métodos faltantes y mejoras en la gestión de directorios
 
 ### Versión 1.2.0 - Interfaz moderna y mejorada UX (Junio 2025)
 - ✨ **Interfaz gráfica completamente rediseñada** con estilos modernos y profesionales
@@ -22,8 +33,17 @@
 - 📈 **Barra de estado contextual** con información relevante en tiempo real
 
 ### Versión 1.1.0 - Almacenamiento mejorado (Mayo 2025)
-- 🗂️ **Ubicación de datos optimizada** en la carpeta Documentos del usuario
+- 🗽️ **Ubicación de datos optimizada** en la carpeta Documentos del usuario
 - 🔑 **Estructura de carpetas persistente** entre sesiones para mejor experiencia
+
+## 🔥 PRÓXIMA VERSIÓN IMPORTANTE
+
+### Versión 2.0.0 - Arquitectura modular y orientada a objetos (En desarrollo)
+- 🛠️ **Refactorización completa del código** para mejor mantenimiento y extensibilidad
+- 📚 **Arquitectura modular** con separación clara de responsabilidades
+- 🔗 **Implementación de patrones de diseño** para mayor robustez y flexibilidad
+- ⚡ **Mejor rendimiento** gracias a una arquitectura optimizada
+- 🧹 **Código más limpio** facilitando futuras ampliaciones
 - 📂 **Organización automática** de archivos por tipos y eventos
 - 🔄 **Recarga automática** de eventos disponibles
 
@@ -217,14 +237,104 @@ Nuestro plan de desarrollo para CertManager Pro incluye las siguientes mejoras:
 - [x] Organización automática de archivos
 - [x] Recarga automática de eventos disponibles
 
+### ✅ Implementado en v1.3.1 (Julio 2025)
+- [x] Validación mejorada de archivos Excel con instrucciones detalladas para el usuario
+- [x] Mensajes informativos claros sobre dónde se guardan los archivos generados
+- [x] Documentación actualizada con estructura detallada de directorios
+
 ### ✅ Implementado en v1.3.0 (Junio 2025)
 - [x] Vista previa de imágenes seleccionadas en miniaturas con visualización a tamaño completo
 - [x] Panel de configuración avanzada de PDF (resolución, orientación, márgenes, calidad)
 - [x] Correcciones de estabilidad (métodos faltantes y gestión de directorios)
 
-### 🟡 Próximas mejoras (v1.3.1)
+### 🟡 Próximas mejoras (v1.4.0)
 - [ ] Herramientas básicas de ajuste de imágenes (rotación, recorte)
 - [ ] Herramientas para duplicar, eliminar y buscar eventos
+
+### 🔥 Próxima versión mayor (v2.0.0) - Arquitectura modular
+- [ ] Refactorización completa a arquitectura modular y orientada a objetos
+- [ ] Separación en componentes independientes para mejor mantenimiento
+- [ ] Implementación de patrones de diseño avanzados
+- [ ] Mayor extensibilidad para futuras funcionalidades
+
+#### Beneficios de la nueva arquitectura:
+- **Mantenimiento simplificado**: Cambios en un módulo no afectan a otros
+- **Testing más efectivo**: Facilita pruebas unitarias e integración
+- **Escalabilidad**: Fácil adición de nuevas características
+- **Código reusable**: Componentes reutilizables en futuras aplicaciones
+- **Mejor documentación**: Estructura clara que facilita el entendimiento
+
+#### Estructura modular planificada:
+```
+CertManagerPro/
+├── main.py                      # Punto de entrada de la aplicación
+├── requirements.txt             # Dependencias
+├── README.md                    # Documentación
+├── recursos/                    # Recursos estáticos (imágenes, iconos)
+├── src/                         # Código fuente
+│   ├── __init__.py
+│   ├── config/                  # Configuraciones
+│   │   ├── settings.py          # Constantes y configuraciones
+│   ├── core/                    # Lógica de negocio
+│   │   ├── event_manager.py     # Gestión de eventos
+│   │   ├── file_manager.py      # Gestión de archivos
+│   │   ├── excel_processor.py   # Procesamiento de Excel
+│   │   └── pdf_converter.py     # Conversión de imágenes a PDF
+│   ├── gui/                     # Interfaces gráficas
+│   │   ├── main_window.py       # Ventana principal
+│   │   ├── dialogs/             # Diálogos y ventanas secundarias
+│   │   └── widgets/             # Widgets personalizados
+│   └── utils/                   # Utilidades
+│       ├── logger.py           # Sistema de logging
+│       └── validators.py       # Validadores
+└── tests/                      # Tests unitarios
+```
+
+#### Principales módulos y responsabilidades:
+
+| Módulo | Responsabilidades |
+|---------|-------------------|
+| **EventManager** | Gestión de eventos, estructura de directorios, listar eventos |
+| **FileManager** | Operaciones con archivos, copia de imágenes, gestión de rutas |
+| **ExcelProcessor** | Validación y procesamiento de archivos Excel |
+| **PDFConverter** | Conversión de imágenes a PDF con configuraciones |
+| **MainWindow** | Interfaz principal y coordinación general |
+| **Logger** | Sistema de log unificado y formateado |
+
+#### Patrones de diseño a implementar:
+
+- **Observer**: Para notificaciones entre componentes (ej: actualizar UI cuando cambia estado)
+- **Strategy**: Para diferentes estrategias de conversión de PDFs
+- **Singleton**: Para componentes globales como el logger
+- **Factory**: Para crear diferentes tipos de widgets y diálogos
+- **Facade**: Para simplificar interacciones complejas con subsistemas
+
+#### Plan de migración gradual:
+
+1. **Fase 1: Preparación** (Agosto 2025)
+   - Crear la estructura de directorios base
+   - Configurar entorno de desarrollo
+   - Definir interfaces de los módulos principales
+
+2. **Fase 2: Extracción de componentes** (Septiembre 2025)
+   - Migrar lógica de negocio a módulos independientes
+   - Implementar primeros patrones de diseño
+   - Mantener compatibilidad con versión anterior
+
+3. **Fase 3: Refactorización de UI** (Octubre 2025)
+   - Rediseñar los componentes de interfaz
+   - Implementar sistema de comunicación entre módulos
+   - Crear primeros tests unitarios
+
+4. **Fase 4: Integración final** (Noviembre 2025)
+   - Conectar todos los componentes
+   - Pruebas de integración
+   - Documentación completa
+
+5. **Fase 5: Lanzamiento** (Diciembre 2025)
+   - Versión 2.0.0 estable
+   - Migración de datos de versiones anteriores
+   - Guía completa para usuarios y desarrolladores
 
 ### 🟠 Futuras versiones (v1.4+)
 - [ ] Previsualización del PDF antes de generar
