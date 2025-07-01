@@ -5,13 +5,16 @@ import shutil
 import datetime
 import platform
 import io
+from editor_imagen import EditorImagenDialog
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
                              QLabel, QPushButton, QFileDialog, QComboBox, QLineEdit, QGroupBox,
                              QTextEdit, QListWidget, QListWidgetItem, QProgressBar, QMessageBox,
                              QStatusBar, QDialog, QGridLayout, QScrollArea, QSizePolicy,
-                             QSpacerItem, QTabWidget, QToolButton)
-from PyQt5.QtCore import Qt, QThread, pyqtSignal, QTimer, QSize, QUrl
-from PyQt5.QtGui import QIcon, QPixmap, QImage, QFont, QColor, QPalette, QDesktopServices
+                             QSpacerItem, QTabWidget, QToolButton, QRubberBand, QToolBar,
+                             QAction, QDialogButtonBox, QStyle)
+from PyQt5.QtCore import Qt, QThread, pyqtSignal, QTimer, QSize, QUrl, QRect, QPoint
+from PyQt5.QtGui import QIcon, QPixmap, QImage, QFont, QColor, QPalette, QDesktopServices, \
+                       QTransform, QCursor, QPainter, QPen
 from PIL import Image
 
 class ImagenThumbnailWidget(QListWidget):
@@ -96,6 +99,94 @@ class ImagenThumbnailWidget(QListWidget):
     def limpiar(self):
         """Limpiar todas las miniaturas"""
         self.clear()
+        
+    def resaltar_imagen(self, ruta_imagen):
+        """Resalta visualmente una imagen en la lista"""
+        # Buscar el ítem por su ruta
+        for i in range(self.count()):
+            item = self.item(i)
+            if item.data(Qt.UserRole) == ruta_imagen:
+                # Resaltar el ítem con un borde especial y color de fondo
+                item.setBackground(QColor(230, 255, 230))  # Verde claro
+                # Agregar indicador visual para imágenes editadas
+                nombre_base = os.path.basename(ruta_imagen)
+                if "_editada" in nombre_base:
+                    item.setText(f"✏️ {nombre_base[:10]}...")
+                    item.setForeground(QColor(0, 128, 0))  # Verde oscuro
+                # Seleccionar y hacer visible el ítem
+                self.setCurrentItem(item)
+                self.scrollToItem(item)
+                # Aplicar un parpadeo temporal para llamar la atención
+                self._parpadear_item(item)
+                break
+    
+    def _parpadear_item(self, item):
+        """Hace parpadear un ítem para llamar la atención de forma segura"""
+        # Guardar el índice del elemento en lugar de la referencia directa
+        item_row = self.row(item)
+        item_path = item.data(Qt.UserRole)
+        
+        # Color de fondo original y color de resaltado
+        original_bg = QColor(230, 255, 230)  # Verde claro para imágenes editadas
+        highlight_color = QColor(255, 255, 0)  # Amarillo brillante para parpadeo
+        
+        # Contador para limitar los ciclos
+        parpadeo_contador = [0]  # Usar lista para poder modificarla en las funciones anidadas
+        
+        # Crear una secuencia de parpadeo usando QTimer con comprobación de seguridad
+        def parpadeo_on():
+            # Verificar si el elemento sigue existiendo antes de modificarlo
+            try:
+                if parpadeo_contador[0] >= 6:  # Limitar a 3 ciclos completos
+                    detener_parpadeo()
+                    return
+                    
+                # Buscar el elemento por índice y ruta (doble verificación)
+                if self.count() > item_row and self.item(item_row) and self.item(item_row).data(Qt.UserRole) == item_path:
+                    self.item(item_row).setBackground(highlight_color)
+                    parpadeo_contador[0] += 1
+                    QTimer.singleShot(200, parpadeo_off)
+            except Exception:
+                # Ignorar cualquier error si el elemento ya no existe
+                pass
+            
+        def parpadeo_off():
+            # Verificar si el elemento sigue existiendo antes de modificarlo
+            try:
+                if parpadeo_contador[0] >= 6:  # Limitar a 3 ciclos completos
+                    detener_parpadeo()
+                    return
+                    
+                # Buscar el elemento por índice y ruta (doble verificación)
+                if self.count() > item_row and self.item(item_row) and self.item(item_row).data(Qt.UserRole) == item_path:
+                    self.item(item_row).setBackground(original_bg)
+                    parpadeo_contador[0] += 1
+                    QTimer.singleShot(200, parpadeo_on)
+            except Exception:
+                # Ignorar cualquier error si el elemento ya no existe
+                pass
+            
+        def detener_parpadeo():
+            # Final del parpadeo: asegurar que queda con el color de resaltado
+            try:
+                # Verificar nuevamente si el elemento existe
+                if self.count() > item_row and self.item(item_row) and self.item(item_row).data(Qt.UserRole) == item_path:
+                    self.item(item_row).setBackground(original_bg)  # Color resaltado final
+            except Exception:
+                # Ignorar errores si ya no existe
+                pass
+            
+        # Iniciar secuencia
+        try:
+            parpadeo_on()
+        except Exception as e:
+            print(f"Error al iniciar parpadeo: {e}")
+            # En caso de error, intentar establecer directamente el color sin parpadeo
+            try:
+                if self.count() > item_row and self.item(item_row):
+                    self.item(item_row).setBackground(original_bg)
+            except:
+                pass
 
 class ConfiguracionPDFDialog(QDialog):
     """Diálogo de configuración avanzada para la generación de PDFs"""
@@ -367,14 +458,26 @@ class ConvertidorThread(QThread):
                 nombre_original = str(fila['original']).strip() + '.png'
                 nuevo_nombre = str(fila['nuevo']).strip().replace(' ', '_') + '.pdf'
                 
-                ruta_imagen = os.path.join(dir_imagenes, nombre_original)
+                # Generar posibles rutas de imagen (original y editada)
+                ruta_imagen_original = os.path.join(dir_imagenes, nombre_original)
+                # Generar el nombre de la versión editada
+                nombre_sin_ext = os.path.splitext(nombre_original)[0]
+                nombre_editado = nombre_sin_ext + '_editada.png'
+                ruta_imagen_editada = os.path.join(dir_imagenes, nombre_editado)
+                
+                # Usar preferentemente la versión editada si existe
+                ruta_imagen = ruta_imagen_editada if os.path.exists(ruta_imagen_editada) else ruta_imagen_original
                 ruta_pdf = os.path.join(dir_pdfs, nuevo_nombre)
                 
                 # Actualizar progreso
                 progreso_actual = int((idx + 1) / total_filas * 100)
                 self.progreso.emit(progreso_actual)
                 
+                # Verificar si existe alguna de las versiones de la imagen
                 if os.path.exists(ruta_imagen):
+                    # Si se está usando la versión editada, informarlo
+                    if ruta_imagen == ruta_imagen_editada:
+                        self.log.emit(f"📝 Usando versión editada: {nombre_editado}")
                     try:
                         with Image.open(ruta_imagen) as img:
                             # Aplicar configuración de orientación si no es automática
@@ -764,11 +867,24 @@ class MainWindow(QMainWindow):
         imagen_contador_layout.addWidget(self.contador_imagenes)
         imagen_contador_layout.addStretch()
         
+        # Botones para seleccionar y editar imágenes
+        botones_layout = QHBoxLayout()
+        
         # Botón para seleccionar imágenes
         self.btn_imagenes = QPushButton("🖼️ Seleccionar Imágenes PNG")
         self.btn_imagenes.setStyleSheet(BUTTON_STYLE)
         self.btn_imagenes.setToolTip("Seleccionar una o múltiples imágenes en formato PNG")
         self.btn_imagenes.clicked.connect(self.seleccionar_imagenes)
+        
+        # Botón para editar imágenes
+        self.btn_editar_imagenes = QPushButton("✏️ Editar Imágenes")
+        self.btn_editar_imagenes.setStyleSheet(BUTTON_STYLE)
+        self.btn_editar_imagenes.setToolTip("Rotar o recortar las imágenes seleccionadas")
+        self.btn_editar_imagenes.clicked.connect(self.editar_imagenes)
+        self.btn_editar_imagenes.setEnabled(False)  # Inicialmente deshabilitado hasta que se seleccionen imágenes
+        
+        botones_layout.addWidget(self.btn_imagenes)
+        botones_layout.addWidget(self.btn_editar_imagenes)
         
         # Contenedor para miniaturas y su información
         miniaturas_container = QWidget()
@@ -798,7 +914,7 @@ class MainWindow(QMainWindow):
         miniaturas_layout.addWidget(self.lista_imagenes)
         
         imagenes_layout.addLayout(imagen_contador_layout)
-        imagenes_layout.addWidget(self.btn_imagenes)
+        imagenes_layout.addLayout(botones_layout)  # Agregar el layout con ambos botones
         imagenes_layout.addWidget(miniaturas_container)  # Agregar el contenedor que tiene las miniaturas y la etiqueta
         grupo_imagenes.setLayout(imagenes_layout)
         
@@ -1048,6 +1164,10 @@ class MainWindow(QMainWindow):
             # Actualizar el contador
             self.contador_imagenes.setText(str(len(archivos)))
             
+            # Si hay imágenes seleccionadas, habilitar el botón de editar
+            if hasattr(self, 'btn_editar_imagenes'):
+                self.btn_editar_imagenes.setEnabled(len(archivos) > 0)
+            
             # Limpiar y actualizar el widget de miniaturas
             self.lista_imagenes.limpiar()
             
@@ -1085,6 +1205,177 @@ class MainWindow(QMainWindow):
             visor.exec_()  # Mostrar diálogo modal
         except Exception as e:
             self.log_mensaje(f"Error al mostrar la vista previa: {str(e)}", tipo='error')
+    
+    def editar_imagenes(self):
+        """Abre el editor de imágenes para rotar o recortar la imagen seleccionada"""
+        if not self.imagenes_seleccionadas:
+            QMessageBox.warning(self, "Error", "No hay imágenes seleccionadas para editar")
+            return
+            
+        # Si hay múltiples imágenes, preguntar cuál editar
+        if len(self.imagenes_seleccionadas) == 1:
+            # Si solo hay una imagen, editarla directamente
+            self.abrir_editor_imagen(self.imagenes_seleccionadas[0])
+        else:
+            # Crear un diálogo para seleccionar qué imagen editar
+            dialog = QDialog(self)
+            dialog.setWindowTitle("Seleccionar imagen para editar")
+            dialog.setModal(True)
+            dialog.setMinimumWidth(500)
+            
+            layout = QVBoxLayout(dialog)
+            
+            # Instrucciones
+            info = QLabel("Seleccione la imagen que desea editar:")
+            info.setStyleSheet("font-weight: bold; color: #2c3e50;")
+            layout.addWidget(info)
+            
+            # Lista de imágenes
+            lista = QListWidget()
+            lista.setIconSize(QSize(80, 80))  # Iconos más grandes para mejor vista
+            lista.setMinimumHeight(300)  # Más espacio para ver las imágenes
+            
+            # Añadir imágenes a la lista con miniaturas
+            for ruta in self.imagenes_seleccionadas:
+                nombre = os.path.basename(ruta)
+                # Crear miniatura para la lista
+                try:
+                    pixmap = QPixmap(ruta).scaled(80, 80, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+                    
+                    # Indicador visual para imágenes editadas
+                    if "_editada" in nombre:
+                        item = QListWidgetItem(QIcon(pixmap), f"✏️ {nombre}")
+                        item.setForeground(QColor(0, 128, 0))  # Verde oscuro
+                        item.setBackground(QColor(230, 255, 230))  # Verde claro
+                    else:
+                        item = QListWidgetItem(QIcon(pixmap), nombre)
+                        
+                    item.setData(Qt.UserRole, ruta)  # Guardar la ruta completa
+                    item.setToolTip(f"<b>{nombre}</b><br>{ruta}")
+                    lista.addItem(item)
+                except Exception as e:
+                    self.log_mensaje(f"Error al crear miniatura: {str(e)}", tipo='error')
+            
+            layout.addWidget(lista)
+            
+            # Información adicional
+            nota_info = QLabel("💡 Las imágenes editadas se muestran con fondo verde y un ícono de lápiz")
+            nota_info.setStyleSheet("font-style: italic; color: #7f8c8d;")
+            layout.addWidget(nota_info)
+            
+            # Botones
+            botones = QHBoxLayout()
+            btn_cancelar = QPushButton("Cancelar")
+            btn_cancelar.clicked.connect(dialog.reject)
+            
+            btn_editar = QPushButton("Editar")
+            btn_editar.setDefault(True)
+            btn_editar.setStyleSheet("background-color: #3498db; color: white; font-weight: bold;")
+            
+            def on_editar_clicked():
+                if lista.currentItem():
+                    ruta = lista.currentItem().data(Qt.UserRole)
+                    dialog.accept()
+                    self.abrir_editor_imagen(ruta)
+                else:
+                    QMessageBox.warning(self, "Error", "Debe seleccionar una imagen para editar")
+            
+            btn_editar.clicked.connect(on_editar_clicked)
+            
+            botones.addWidget(btn_cancelar)
+            botones.addWidget(btn_editar)
+            layout.addLayout(botones)
+            
+            # Ejecutar diálogo centrado en la pantalla
+            dialog.setGeometry(
+                QStyle.alignedRect(
+                    Qt.LeftToRight,
+                    Qt.AlignCenter,
+                    dialog.size(),
+                    QApplication.desktop().availableGeometry()
+                )
+            )
+            dialog.exec_()
+    
+    def abrir_editor_imagen(self, ruta_imagen):
+        """Abre el editor de imágenes para una ruta específica"""
+        try:
+            # Comprobar si existe una versión editada de esta imagen y usarla en su lugar
+            ruta_a_usar = ruta_imagen
+            if not "_editada" in ruta_imagen:
+                # Verificar si existe una versión editada
+                directorio = os.path.dirname(ruta_imagen)
+                nombre_base = os.path.basename(ruta_imagen)
+                nombre_sin_ext, extension = os.path.splitext(nombre_base)
+                posible_editada = os.path.join(directorio, f"{nombre_sin_ext}_editada{extension}")
+                
+                if os.path.exists(posible_editada):
+                    ruta_a_usar = posible_editada
+                    self.log_mensaje(f"Se encontró una versión editada de la imagen: {os.path.basename(posible_editada)}", tipo='info')
+            
+            # Abrir el editor con la versión más reciente
+            editor = EditorImagenDialog(ruta_a_usar, self)
+            if editor.exec_() == QDialog.Accepted and hasattr(editor, 'nueva_ruta_imagen'):
+                # Si la imagen fue editada y guardada exitosamente
+                nueva_ruta = editor.nueva_ruta_imagen
+                
+                # Actualizar la lista de imágenes seleccionadas
+                # Actualizar tanto la original como cualquier versión editada previa
+                if ruta_imagen in self.imagenes_seleccionadas:
+                    indice = self.imagenes_seleccionadas.index(ruta_imagen)
+                    self.imagenes_seleccionadas[indice] = nueva_ruta
+                elif ruta_a_usar in self.imagenes_seleccionadas:
+                    indice = self.imagenes_seleccionadas.index(ruta_a_usar)
+                    self.imagenes_seleccionadas[indice] = nueva_ruta
+                    
+                # Actualizar miniaturas con cache limpia para evitar problemas de caché
+                self.lista_imagenes.limpiar()
+                for img in self.imagenes_seleccionadas:
+                    self.lista_imagenes.agregar_imagen(img)
+                
+                # Resaltar la nueva imagen en la lista (marcarla con un borde)
+                self.lista_imagenes.resaltar_imagen(nueva_ruta)
+                
+                # Mostrar mensaje detallado de éxito
+                nombre_archivo = os.path.basename(nueva_ruta)
+                ruta_directorio = os.path.dirname(nueva_ruta)
+                
+                # Mostrar un cuadro de diálogo con información detallada sobre la imagen guardada
+                msg = QMessageBox(self)
+                msg.setIcon(QMessageBox.Information)
+                msg.setWindowTitle("Imagen editada guardada")
+                msg.setText(f"<b>La imagen editada se ha guardado como:</b><br><br>{nombre_archivo}")
+                msg.setInformativeText(f"<b>Ubicación:</b><br>{ruta_directorio}")
+                
+                # Añadir botones personalizados
+                btn_ok = msg.addButton("Aceptar", QMessageBox.AcceptRole)
+                btn_abrir_carpeta = msg.addButton("Abrir carpeta", QMessageBox.ActionRole)
+                btn_abrir_imagen = msg.addButton("Ver imagen", QMessageBox.ActionRole)
+                
+                msg.exec_()
+                
+                # Acciones según el botón que se presionó
+                if msg.clickedButton() == btn_abrir_carpeta:
+                    self.abrir_carpeta(ruta_directorio)
+                elif msg.clickedButton() == btn_abrir_imagen:
+                    # Abrir la imagen en el visor de imágenes
+                    self.mostrar_vista_previa(nueva_ruta)
+                
+                # También registrar en el log
+                self.log_mensaje(f"Imagen editada y guardada como: {nombre_archivo}", tipo='success')
+        except Exception as e:
+            self.log_mensaje(f"Error al editar imagen: {str(e)}", tipo='error')
+            
+    def abrir_carpeta(self, ruta):
+        """Abre la carpeta especificada en el explorador de archivos"""
+        try:
+            import subprocess
+            if os.name == 'nt':  # Windows
+                subprocess.Popen(f'explorer "{ruta}"')
+            elif os.name == 'posix':  # macOS y Linux
+                subprocess.Popen(['xdg-open', ruta])
+        except Exception as e:
+            self.log_mensaje(f"Error al abrir la carpeta: {str(e)}", tipo='error')
     
     def cargar_eventos_disponibles(self):
         """Cargar los eventos disponibles en el directorio de eventos"""

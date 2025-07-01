@@ -14,6 +14,13 @@
 
 ## 💨 ÚLTIMAS ACTUALIZACIONES
 
+### Versión 1.3.2 - Editor de Imágenes Mejorado (Julio 2025)
+- ✂️ **Sistema de recorte estable** que mantiene la selección visible después de soltar el ratón
+- 🔄 **Compatibilidad mejorada** entre imágenes editadas y conversión a PDF
+- 🖼️ **Mejor visualización de imágenes editadas** con indicadores visuales claros
+- 📝 **Mensajes informativos durante edición** con detalles sobre dimensiones y acciones
+- 🛡️ **Mayor estabilidad** al editar múltiples imágenes consecutivas
+
 ### Versión 1.3.1 - Mejoras en la experiencia de usuario (Julio 2025)
 - ✅ **Validación mejorada de archivos Excel** con instrucciones detalladas y mensajes claros
 - 📂 **Información clara sobre ubicación de archivos** con mensajes detallados sobre dónde se guardan los PDFs
